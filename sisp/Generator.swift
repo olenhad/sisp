@@ -43,6 +43,8 @@ struct Context {
         let value = LLVMRunFunction(engine.pointee, function, 0, nil)
         let result = LLVMGenericValueToFloat(LLVMDoubleType(), value)
         
+        LLVMDeleteFunction(function)
+        
         return result
     }
 }
@@ -138,6 +140,11 @@ struct Generator {
             return LLVMBuildCall(ctx.builder, function, arguments, argCount, "sisp_call")
         
         case .function(proto: let proto, body: let body):
+            let existingFunc = LLVMGetNamedFunction(ctx.module, proto.name)
+            if existingFunc != nil {
+                LLVMDeleteFunction(existingFunc)
+            }
+            
             let function = try codegen(proto: proto, ctx: ctx)
             
             let entryBlock = LLVMAppendBasicBlock(function, "entry")
