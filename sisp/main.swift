@@ -21,10 +21,16 @@ while true {
     
     do {
         let tokens = try Token.tokenize(input: input)
-        let parseResult = try Parser.parse(tokens: tokens)
-        print("Parser Result\n: \(parseResult.expr)")
-        let value = try Generator.codegen(expr: parseResult.expr, ctx: &context)
-        LLVMDumpValue(value)
+        let program = try Parser.parseProgram(tokens: tokens)
+        print("Parser Result\n: \(program)")
+        
+        let code = try Generator.codegen(program: program, ctx: &context)
+        print("CodeGen Result:\n:")
+        LLVMDumpModule(context.module)
+        
+        let result = context.run(function: code)
+        
+        print("RESULT = \(result)")
     }
     catch let err as TokenizerError {
         print(err)

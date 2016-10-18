@@ -19,7 +19,19 @@ enum ParserError : Error {
 }
 
 struct Parser {
-    static func parse(tokens: [Token]) throws -> ParserResult<Expr> {
+    static func parseProgram(tokens: [Token]) throws -> Program {
+        var result = try parseExpr(tokens: tokens)
+        var exprs = [result.expr]
+        
+        while result.remaining.count > 0 {
+            result = try parseExpr(tokens: result.remaining)
+            exprs.append(result.expr)
+        }
+        
+        return Program(exprs: exprs)
+    }
+    
+    static func parseExpr(tokens: [Token]) throws -> ParserResult<Expr> {
         guard let first = tokens.first else {
             throw ParserError.invalidState
         }
@@ -63,12 +75,12 @@ struct Parser {
             throw ParserError.invalidState
         }
         
-        let lhs = try parse(tokens: tokens.rest())
+        let lhs = try parseExpr(tokens: tokens.rest())
         if lhs.remaining.count < 2 {
             throw ParserError.unexpectedInput(expected: "Binary Op should have two operands")
         }
         
-        let rhs = try parse(tokens: lhs.remaining)
+        let rhs = try parseExpr(tokens: lhs.remaining)
         
         guard let closing = rhs.remaining.first else {
             throw ParserError.unexpectedInput(expected: "Expected closing paren )")
@@ -93,9 +105,17 @@ struct Parser {
         
         let funcProto = try parseFunctionArgs(tokens: tokens.rest(), funcName: funcName.val)
         
-        let funcBody = try parse(tokens: funcProto.remaining)
+        let funcBody = try parseExpr(tokens: funcProto.remaining)
         
-        return ParserResult(expr: Expr.function(proto: funcProto.expr, body: funcBody.expr), remaining: funcBody.remaining)
+        guard let closing = funcBody.remaining.first else {
+            throw ParserError.unexpectedInput(expected: "Expected closing paren )")
+        }
+        
+        if !closing.isClosingParen() {
+            throw ParserError.unexpectedInput(expected: "Expected closing paren )")
+        }
+        
+        return ParserResult(expr: Expr.function(proto: funcProto.expr, body: funcBody.expr), remaining: funcBody.remaining.rest())
     }
     
     static func parseFunctionArgs(tokens: [Token], funcName: String) throws -> ParserResult<Prototype> {
@@ -130,7 +150,7 @@ struct Parser {
         var exprs: [Expr] = []
         
         while remaining.count > 0 && !remaining[0].isClosingParen() {
-            let result = try parse(tokens: remaining)
+            let result = try parseExpr(tokens: remaining)
             remaining = result.remaining
             exprs.append(result.expr)
         }
@@ -147,9 +167,9 @@ struct Parser {
             throw ParserError.unexpectedInput(expected: "Expected if")
         }
         
-        let cond = try parse(tokens: tokens.rest())
-        let then = try parse(tokens: cond.remaining)
-        let elseE = try parse(tokens: then.remaining)
+        let cond = try parseExpr(tokens: tokens.rest())
+        let then = try parseExpr(tokens: cond.remaining)
+        let elseE = try parseExpr(tokens: then.remaining)
         
         guard let closing = elseE.remaining.first else {
             throw ParserError.unexpectedInput(expected: "Expected closing paren )")

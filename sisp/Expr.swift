@@ -21,3 +21,7 @@ struct Prototype {
     let name: String
     let args: [String]
 }
+
+struct Program {
+    let exprs: [Expr]
+}

@@ -13,21 +13,25 @@ struct Context {
     var namedValues: [String : LLVMValueRef]
     let builder: LLVMBuilderRef?
     let module: LLVMModuleRef?
-    let engine: LLVMExecutionEngineRef?
     
     init(moduleName: String) {
         module = LLVMModuleCreateWithName(moduleName)
         builder = LLVMCreateBuilder()
+        namedValues = [:]
+        
+        LLVMLinkInMCJIT()
+        LLVMInitializeNativeTarget()
+        LLVMInitializeNativeAsmPrinter()
+        
+    }
+    
+    func run(function: LLVMValueRef?) -> Double {
         
         let engineSize = MemoryLayout<LLVMExecutionEngineRef?>.stride
         let engine = UnsafeMutablePointer<LLVMExecutionEngineRef?>.allocate(capacity: engineSize)
         
         let errorSize = MemoryLayout<UnsafeMutablePointer<Int8>?>.stride
         let error = UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>.allocate(capacity: errorSize)
-    
-        LLVMLinkInMCJIT()
-        LLVMInitializeNativeTarget()
-        LLVMInitializeNativeAsmPrinter()
         
         let res = LLVMCreateExecutionEngineForModule(engine, module, error)
         if res != 0 {
@@ -36,9 +40,10 @@ struct Context {
             exit(1)
         }
         
-        self.engine = engine.pointee
+        let value = LLVMRunFunction(engine.pointee, function, 0, nil)
+        let result = LLVMGenericValueToFloat(LLVMDoubleType(), value)
         
-        namedValues = [:]
+        return result
     }
 }
 
@@ -47,6 +52,34 @@ enum GeneratorError : Error {
 }
 
 struct Generator {
+    static func codegen(program: Program, ctx: inout Context) throws -> LLVMValueRef? {
+        
+        var lastVal = LLVMConstReal(LLVMDoubleType(), 0.0)
+        
+        let mainType = LLVMFunctionType(LLVMDoubleType(), nil, 0, 0)
+        let mainFunction = LLVMAddFunction(ctx.module, "main", mainType)
+        
+        let entryBlock = LLVMAppendBasicBlock(mainFunction, "entry")
+        
+        for expr in program.exprs {
+            switch expr {
+            case .function(_):
+                let _ = try codegen(expr: expr, ctx: &ctx)
+            default:
+                LLVMPositionBuilderAtEnd(ctx.builder, entryBlock)
+                lastVal = try codegen(expr: expr, ctx: &ctx)
+            }
+            
+        }
+
+        LLVMPositionBuilderAtEnd(ctx.builder, entryBlock)
+        LLVMBuildRet(ctx.builder, lastVal)
+        
+        LLVMVerifyFunction(mainFunction, LLVMAbortProcessAction)
+        
+        return mainFunction
+    }
+    
     static func codegen(expr: Expr, ctx: inout Context) throws -> LLVMValueRef? {
         switch expr {
         case let .number(val):
@@ -122,6 +155,12 @@ struct Generator {
             
             let retVal = try codegen(expr: body, ctx: &ctx)
             LLVMBuildRet(ctx.builder, retVal)
+            
+            LLVMVerifyFunction(function, LLVMAbortProcessAction)
+            
+            for name in namesInFnScope {
+                ctx.namedValues.removeValue(forKey: name)
+            }
             
             return function
         
