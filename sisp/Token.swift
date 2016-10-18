@@ -50,7 +50,7 @@ extension Token {
                 continue
             }
             
-            let ops: [String] = ["+", "*", "_", "/", "<", ">", "="]
+            let ops: [String] = ["+", "*", "-", "/", "<", ">", "="]
             if ops.contains(char) {
                 tokens.append(Token(type:.op, val: String(char)))
                 currentIndex = currentIndex + 1

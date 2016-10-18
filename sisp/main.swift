@@ -7,6 +7,11 @@
 //
 
 import Foundation
+import LLVM_C
+
+//demo()
+
+var context = Context(moduleName: "sisp")
 
 while true {
     print("sisp> ", terminator: "")
@@ -17,7 +22,9 @@ while true {
     do {
         let tokens = try Token.tokenize(input: input)
         let parseResult = try Parser.parse(tokens: tokens)
-        print(parseResult.expr)
+        print("Parser Result\n: \(parseResult.expr)")
+        let value = try Generator.codegen(expr: parseResult.expr, ctx: &context)
+        LLVMDumpValue(value)
     }
     catch let err as TokenizerError {
         print(err)
@@ -29,4 +36,5 @@ while true {
         print("Unknown Error")
     }
 }
+
 

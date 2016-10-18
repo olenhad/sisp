@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		90105F181DB53A5400A72916 /* sispTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90105F171DB53A5400A72916 /* sispTests.swift */; };
+		904B0C501DB6407200EC500B /* LLVMDemo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 904B0C4F1DB6407200EC500B /* LLVMDemo.swift */; };
+		904B0C521DB6410100EC500B /* Generator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 904B0C511DB6410100EC500B /* Generator.swift */; };
 		908A94271DB3FA8200E06ED3 /* Expr.swift in Sources */ = {isa = PBXBuildFile; fileRef = 908A94261DB3FA8200E06ED3 /* Expr.swift */; };
 		908A94291DB4044500E06ED3 /* Parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 908A94281DB4044500E06ED3 /* Parser.swift */; };
 		90E2DE811DB3344B00AC6141 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90E2DE801DB3344B00AC6141 /* main.swift */; };
@@ -40,6 +42,8 @@
 		90105F151DB53A5400A72916 /* sispTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = sispTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		90105F171DB53A5400A72916 /* sispTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = sispTests.swift; sourceTree = "<group>"; };
 		90105F191DB53A5400A72916 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		904B0C4F1DB6407200EC500B /* LLVMDemo.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LLVMDemo.swift; sourceTree = "<group>"; };
+		904B0C511DB6410100EC500B /* Generator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Generator.swift; sourceTree = "<group>"; };
 		908A94261DB3FA8200E06ED3 /* Expr.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expr.swift; sourceTree = "<group>"; };
 		908A94281DB4044500E06ED3 /* Parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Parser.swift; sourceTree = "<group>"; };
 		90E2DE7D1DB3344B00AC6141 /* sisp */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = sisp; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -99,6 +103,8 @@
 				90E2DE871DB336E500AC6141 /* Token.swift */,
 				908A94261DB3FA8200E06ED3 /* Expr.swift */,
 				908A94281DB4044500E06ED3 /* Parser.swift */,
+				904B0C511DB6410100EC500B /* Generator.swift */,
+				904B0C4F1DB6407200EC500B /* LLVMDemo.swift */,
 			);
 			path = sisp;
 			sourceTree = "<group>";
@@ -203,7 +209,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				908A94291DB4044500E06ED3 /* Parser.swift in Sources */,
+				904B0C501DB6407200EC500B /* LLVMDemo.swift in Sources */,
 				90E2DE811DB3344B00AC6141 /* main.swift in Sources */,
+				904B0C521DB6410100EC500B /* Generator.swift in Sources */,
 				908A94271DB3FA8200E06ED3 /* Expr.swift in Sources */,
 				90E2DE881DB336E500AC6141 /* Token.swift in Sources */,
 			);
@@ -337,6 +345,53 @@
 		90E2DE851DB3344B00AC6141 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					/Users/garena/Projects/llvm/build/include,
+					/Users/garena/Projects/llvm/llvm/include,
+				);
+				LIBRARY_SEARCH_PATHS = /Users/garena/Projects/llvm/build/lib;
+				OTHER_CFLAGS = (
+					"-Xcc",
+					"-D__STDC_CONSTANT_MACROS",
+					"-Xcc",
+					"-D__STDC_LIMIT_MACROS",
+				);
+				OTHER_LDFLAGS = (
+					"-lLLVMX86Disassembler",
+					"-lLLVMX86AsmParser",
+					"-lLLVMX86CodeGen",
+					"-lLLVMSelectionDAG",
+					"-lLLVMAsmPrinter",
+					"-lLLVMDebugInfoCodeView",
+					"-lLLVMDebugInfoMSF",
+					"-lLLVMCodeGen",
+					"-lLLVMScalarOpts",
+					"-lLLVMInstCombine",
+					"-lLLVMInstrumentation",
+					"-lLLVMTransformUtils",
+					"-lLLVMBitWriter",
+					"-lLLVMX86Desc",
+					"-lLLVMMCDisassembler",
+					"-lLLVMX86Info",
+					"-lLLVMX86AsmPrinter",
+					"-lLLVMX86Utils",
+					"-lLLVMMCJIT",
+					"-lLLVMExecutionEngine",
+					"-lLLVMTarget",
+					"-lLLVMAnalysis",
+					"-lLLVMProfileData",
+					"-lLLVMRuntimeDyld",
+					"-lLLVMObject",
+					"-lLLVMMCParser",
+					"-lLLVMBitReader",
+					"-lLLVMMC",
+					"-lLLVMCore",
+					"-lLLVMSupport",
+					"-lLLVMDemangle",
+					"-lc++",
+					"-lncurses",
+					"-lz",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -345,6 +400,53 @@
 		90E2DE861DB3344B00AC6141 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = (
+					/Users/garena/Projects/llvm/build/include,
+					/Users/garena/Projects/llvm/llvm/include,
+				);
+				LIBRARY_SEARCH_PATHS = /Users/garena/Projects/llvm/build/lib;
+				OTHER_CFLAGS = (
+					"-Xcc",
+					"-D__STDC_CONSTANT_MACROS",
+					"-Xcc",
+					"-D__STDC_LIMIT_MACROS",
+				);
+				OTHER_LDFLAGS = (
+					"-lLLVMX86Disassembler",
+					"-lLLVMX86AsmParser",
+					"-lLLVMX86CodeGen",
+					"-lLLVMSelectionDAG",
+					"-lLLVMAsmPrinter",
+					"-lLLVMDebugInfoCodeView",
+					"-lLLVMDebugInfoMSF",
+					"-lLLVMCodeGen",
+					"-lLLVMScalarOpts",
+					"-lLLVMInstCombine",
+					"-lLLVMInstrumentation",
+					"-lLLVMTransformUtils",
+					"-lLLVMBitWriter",
+					"-lLLVMX86Desc",
+					"-lLLVMMCDisassembler",
+					"-lLLVMX86Info",
+					"-lLLVMX86AsmPrinter",
+					"-lLLVMX86Utils",
+					"-lLLVMMCJIT",
+					"-lLLVMExecutionEngine",
+					"-lLLVMTarget",
+					"-lLLVMAnalysis",
+					"-lLLVMProfileData",
+					"-lLLVMRuntimeDyld",
+					"-lLLVMObject",
+					"-lLLVMMCParser",
+					"-lLLVMBitReader",
+					"-lLLVMMC",
+					"-lLLVMCore",
+					"-lLLVMSupport",
+					"-lLLVMDemangle",
+					"-lc++",
+					"-lncurses",
+					"-lz",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 3.0;
 			};
@@ -360,6 +462,7 @@
 				90105F1C1DB53A5400A72916 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		90E2DE781DB3344B00AC6141 /* Build configuration list for PBXProject "sisp" */ = {
 			isa = XCConfigurationList;
